@@ -1,0 +1,60 @@
+
+macro agregarAbecedario
+
+    mov bx,0
+    mov bl,'*'
+    push bx
+    mov bl,'z'
+    push bx
+    mov bl,'y'
+    push bx
+    mov bl,'x'
+    push bx
+    mov bl,'w'
+    push bx
+    mov bl,'v'
+    push bx
+    mov bl,'u'
+    push bx
+    mov bl,'t'
+    push bx
+    mov bl,'s'
+    push bx
+    mov bl,'r'
+    push bx
+    mov bl,'q'
+    push bx
+    mov bl,'p'
+    push bx
+    mov bl,'o'
+    push bx
+    mov bl,'n'
+    push bx
+    mov bl,'m'
+    push bx
+    mov bl,'l'
+    push bx
+    mov bl,'k'
+    push bx
+    mov bl,'j'
+    push bx
+    mov bl,'i'
+    push bx
+    mov bl,'h'
+    push bx
+    mov bl,'g'
+    push bx
+    mov bl,'f'
+    push bx
+    mov bl,'e'
+    push bx
+    mov bl,'d'
+    push bx
+    mov bl,'c'
+    push bx
+    mov bl,'b'
+    push bx
+    mov bl,'a'
+    push bx
+    
+endm    
