@@ -9,6 +9,9 @@ derecha	equ		1006
 izquierda equ 1007
 arriba equ 1005
 
+rojo equ 1008
+amarillo equ 1009
+
 
 section '.data' data readable writeable
 
@@ -17,10 +20,11 @@ pWnd dd 0
 
 hdc dd 0
 control    RECT 0,0,0,0
+controlColor    RECT 0,0,0,0
 pantalla   RECT 0,0,868,379
 rectangulo RECT 570,210,500,140
 circulo    RECT 360,210,290,140
-triangulo1 RECT 210,110,640,200
+triangulo1 RECT 210,120,640,200
 triangulo2 RECT 210,455,640,455
 
 section '.code' code readable executable
@@ -79,12 +83,52 @@ jCOMMAND:
 	cmp eax,1001
 	je moverAbajo
 	
+	cmp eax,amarillo
+	je cambiaNegro
+	
+	cmp eax,rojo
+	je cambiaRojo
+	
 	xor eax,eax
 	jmp finish
 	
 salir:
 	invoke SendMessage,[hWnd],WM_CLOSE,0,0
 	mov eax,1
+	jmp finish
+
+cambiaNegro:
+	stdcall drawpantalla
+	cmp [control.left],0
+	je salirColor
+	
+	invoke GetDC,[pWnd]
+    mov [hdc],eax
+    invoke CreateSolidBrush,000h
+    invoke FillRect,[hdc],rectangulo,eax 
+    
+    mov [controlColor.left],2
+    mov [controlColor.top],0
+    mov [controlColor.right],0
+salirColor:    
+    mov eax,1
+	jmp finish
+
+cambiaRojo:
+	stdcall drawpantalla
+	cmp [control.left],0
+	je salirColorRojo
+	
+	invoke GetDC,[pWnd]
+    mov [hdc],eax
+    invoke CreateSolidBrush,0FFh
+    invoke FillRect,[hdc],rectangulo,eax 
+    
+    mov [controlColor.left],1
+    mov [controlColor.top],0
+    mov [controlColor.right],0
+salirColorRojo:    
+    mov eax,1
 	jmp finish
 
 moverDerecha:
@@ -96,6 +140,14 @@ moverDerecha:
 	add [rectangulo.right],10
 	invoke GetDC,[pWnd]
     mov [hdc],eax
+    cmp [controlColor.left],1
+  jne contRN
+  invoke CreateSolidBrush,0FFh
+contRN:
+  cmp [controlColor.left],2
+  jne contRD
+  invoke CreateSolidBrush,000h
+contRD: 
     invoke FillRect,[hdc],rectangulo,eax 
     
     mov eax,1
@@ -135,6 +187,14 @@ moverIzquierda:
 	add [rectangulo.right],(-10)
 	invoke GetDC,[pWnd]
     mov [hdc],eax
+    cmp [controlColor.left],1
+  jne contRNI
+  invoke CreateSolidBrush,0FFh
+contRNI:
+  cmp [controlColor.left],2
+  jne contRI
+  invoke CreateSolidBrush,000h
+contRI:
     invoke FillRect,[hdc],rectangulo,eax 
 	mov eax,1
 	jmp finish
@@ -173,6 +233,14 @@ moverArriba:
 	add [rectangulo.bottom],(-10)
 	invoke GetDC,[pWnd]
     mov [hdc],eax
+    cmp [controlColor.left],1
+  jne contRNA
+  invoke CreateSolidBrush,0FFh
+contRNA:
+  cmp [controlColor.left],2
+  jne contRDAb
+  invoke CreateSolidBrush,000h
+contRDAb:
     invoke FillRect,[hdc],rectangulo,eax 
 	
 	mov eax,1
@@ -213,6 +281,14 @@ moverAbajo:
 	add [rectangulo.bottom],10
 	invoke GetDC,[pWnd]
     mov [hdc],eax
+    cmp [controlColor.left],1
+  jne contRNAA
+  invoke CreateSolidBrush,0FFh
+contRNAA:
+  cmp [controlColor.left],2
+  jne contRAA
+  invoke CreateSolidBrush,000h
+contRAA:
     invoke FillRect,[hdc],rectangulo,eax 
 	mov eax,1
 	jmp finish
@@ -253,6 +329,15 @@ drawrect:
 dibujaR:  
   invoke GetDC,[pWnd]
   mov [hdc],eax
+  
+  cmp [controlColor.left],1
+  jne verNegro
+  invoke CreateSolidBrush,0FFh
+verNegro:
+  cmp [controlColor.left],2
+  jne contR
+  invoke CreateSolidBrush,000h
+contR:
   invoke FillRect,[hdc],rectangulo,eax 
   
   mov [control.left],1
@@ -293,6 +378,7 @@ dibujaT:
   mov [hdc],eax
   ;invoke Pie,[hdc],340,160,700,250,  340,505,700,505
   ;invoke Pie,[hdc],220,160,650,250,  220,505,650,505
+  
   invoke Pie,[hdc],[triangulo1.left],[triangulo1.top],[triangulo1.right],[triangulo1.bottom],[triangulo2.left],[triangulo2.top],[triangulo2.right],[triangulo2.bottom] 
   mov [control.left],0
   mov [control.top],0
