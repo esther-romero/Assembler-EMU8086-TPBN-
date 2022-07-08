@@ -9,9 +9,6 @@ derecha	equ		1006
 izquierda equ 1007
 arriba equ 1005
 
-rojo equ 1008
-amarillo equ 1009
-
 
 section '.data' data readable writeable
 
@@ -83,10 +80,10 @@ jCOMMAND:
 	cmp eax,1001
 	je moverAbajo
 	
-	cmp eax,amarillo
+	cmp eax,1009
 	je cambiaNegro
 	
-	cmp eax,rojo
+	cmp eax,1008
 	je cambiaRojo
 	
 	xor eax,eax
@@ -100,7 +97,7 @@ salir:
 cambiaNegro:
 	stdcall drawpantalla
 	cmp [control.left],0
-	je salirColor
+	je negroCircle
 	
 	invoke GetDC,[pWnd]
     mov [hdc],eax
@@ -110,14 +107,43 @@ cambiaNegro:
     mov [controlColor.left],2
     mov [controlColor.top],0
     mov [controlColor.right],0
-salirColor:    
+    
     mov eax,1
+	jmp finish
+
+negroCircle:
+	cmp [control.top],0
+	je negroTriangulo
+	   
+	invoke GetDC,[pWnd]
+    mov [hdc],eax
+    invoke Ellipse,[hdc],[ circulo.left],[circulo.top] , [ circulo.right], [ circulo.bottom ]
+    stdcall   CambiaColorFondo, 00000FFh, [hdc]  ; BBGGRR
+	
+	mov [controlColor.left],0
+  mov [controlColor.top],2
+  mov [controlColor.right],0
+	
+	mov eax,1
+	jmp finish
+	
+negroTriangulo:
+	invoke GetDC,[pWnd]
+    mov [hdc],eax
+    invoke CreateSolidBrush,000h
+    invoke Pie,[hdc],[triangulo1.left],[triangulo1.top],[triangulo1.right],[triangulo1.bottom],[triangulo2.left],[triangulo2.top],[triangulo2.right],[triangulo2.bottom]
+	
+	mov [controlColor.left],0
+  mov [controlColor.top],0
+  mov [controlColor.right],2
+	
+	mov eax,1
 	jmp finish
 
 cambiaRojo:
 	stdcall drawpantalla
 	cmp [control.left],0
-	je salirColorRojo
+	je rojoCircle
 	
 	invoke GetDC,[pWnd]
     mov [hdc],eax
@@ -127,8 +153,37 @@ cambiaRojo:
     mov [controlColor.left],1
     mov [controlColor.top],0
     mov [controlColor.right],0
-salirColorRojo:    
+    
     mov eax,1
+	jmp finish
+
+rojoCircle:
+	cmp [control.top],0
+	je rojoTriangulo
+	   
+	invoke GetDC,[pWnd]
+    mov [hdc],eax
+    invoke CreateSolidBrush,0FFh
+    invoke Ellipse,[hdc],[ circulo.left],[circulo.top] , [ circulo.right], [ circulo.bottom ]
+	
+	mov [controlColor.left],0
+  mov [controlColor.top],1
+  mov [controlColor.right],0
+	
+	mov eax,1
+	jmp finish
+	
+rojoTriangulo:
+	invoke GetDC,[pWnd]
+    mov [hdc],eax
+    invoke CreateSolidBrush,0FFh
+    invoke Pie,[hdc],[triangulo1.left],[triangulo1.top],[triangulo1.right],[triangulo1.bottom],[triangulo2.left],[triangulo2.top],[triangulo2.right],[triangulo2.bottom]
+	
+	mov [controlColor.left],0
+  mov [controlColor.top],0
+  mov [controlColor.right],1
+	
+	mov eax,1
 	jmp finish
 
 moverDerecha:
@@ -357,6 +412,10 @@ drawcirculo:
 dibujaC:  
   invoke GetDC,[pWnd]
   mov [hdc],eax
+  cmp [controlColor.top],1
+  jne contC
+  invoke CreateSolidBrush,0FFh
+contC:
   invoke Ellipse,[hdc],[ circulo.left],[circulo.top] , [ circulo.right], [ circulo.bottom ]
   
   mov [control.left],0
@@ -379,6 +438,11 @@ dibujaT:
   ;invoke Pie,[hdc],340,160,700,250,  340,505,700,505
   ;invoke Pie,[hdc],220,160,650,250,  220,505,650,505
   
+  cmp [controlColor.right],1
+  jne contT
+  invoke CreateSolidBrush,0FFh
+contT:
+  
   invoke Pie,[hdc],[triangulo1.left],[triangulo1.top],[triangulo1.right],[triangulo1.bottom],[triangulo2.left],[triangulo2.top],[triangulo2.right],[triangulo2.bottom] 
   mov [control.left],0
   mov [control.top],0
@@ -396,6 +460,23 @@ finish:
 	ret
 endp
 
+proc  CambiaColorFondo newColor, uhdc
+    ;  Propósito: Modifica el color de fondo por defecto
+    ;  Entrada  : newColor:DWORD, uhdc:DWORD
+    ;  Salida   : Ninguna
+    ;  Destruye : Ninguna
+    ;LOCAL     ulb:LOGBRUSH, uhBrush:DWORD, uhBrushOld:DWORD
+    mov       [ulb.lbStyle], BS_SOLID
+    mov       eax, [newColor]
+    mov       [ulb.lbColor], eax        ; BBGGRR, color
+    mov       [ulb.lbHatch], NULL
+    invoke    CreateBrushIndirect, ulb
+    mov       [uhBrush], eax
+    invoke    SelectObject,[uhdc],[uhBrush]     ; Aplicamos el color de fondo
+;     mov       [hBrushOld], eax
+    ret
+endp
+
 proc drawpantalla 
 	
 	invoke GetDC,[pWnd]
@@ -405,6 +486,11 @@ proc drawpantalla
 	
 	ret
 endp
+
+section '.data' data readable writeable 
+  ulb           LOGBRUSH
+  uhBrush       rd    1
+  hBrushOld     rd    1 
 
 section '.idata' import data readable writeable
   ;otra forma para importar los procedimientos importando archivos INC
